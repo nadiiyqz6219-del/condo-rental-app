@@ -1,0 +1,4 @@
+name = "condo-rental-app"
+account_id = "dd090680b3df84bccd44ddbe1371472c"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
