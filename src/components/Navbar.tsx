@@ -1,19 +1,23 @@
 import React from 'react';
-import { Building2, Search, FileText, CreditCard, Wrench, LayoutDashboard, ShieldCheck, User } from 'lucide-react';
+import { Building2, Search, FileText, CreditCard, Wrench, LayoutDashboard, ShieldCheck, User, LogIn, LogOut, Database, RotateCcw } from 'lucide-react';
 import { UserRole, User as UserType } from '../types';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  currentUser: UserType;
-  setUserRole: (role: UserRole) => void;
+  currentUser: UserType | null;
+  onOpenAuth: (mode: 'login' | 'register') => void;
+  onLogout: () => void;
+  onResetDb: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   currentUser,
-  setUserRole
+  onOpenAuth,
+  onLogout,
+  onResetDb
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
@@ -37,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <nav className="hidden md:flex items-center space-x-1">
             <button
               onClick={() => setActiveTab('search')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 activeTab === 'search'
                   ? 'bg-blue-50 text-blue-600 font-semibold'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -49,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => setActiveTab('contract')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 activeTab === 'contract'
                   ? 'bg-blue-50 text-blue-600 font-semibold'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -61,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => setActiveTab('billing')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 activeTab === 'billing'
                   ? 'bg-blue-50 text-blue-600 font-semibold'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -73,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => setActiveTab('maintenance')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 activeTab === 'maintenance'
                   ? 'bg-blue-50 text-blue-600 font-semibold'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -83,52 +87,93 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>แจ้งซ่อมบำรุง</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'dashboard'
-                  ? 'bg-blue-50 text-blue-600 font-semibold'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard สรุป</span>
-            </button>
+            {currentUser?.role === 'ADMIN' && (
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                  activeTab === 'dashboard'
+                    ? 'bg-blue-50 text-blue-600 font-semibold'
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard สรุป</span>
+              </button>
+            )}
           </nav>
 
-          {/* User Profile & Role Switcher */}
+          {/* User Profile / Auth Area */}
           <div className="flex items-center space-x-3">
-            <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-medium">
-              <span className="text-slate-500 px-2">สิทธิ์:</span>
-              <select
-                value={currentUser.role}
-                onChange={(e) => setUserRole(e.target.value as UserRole)}
-                className="bg-white border-0 text-slate-800 rounded px-2 py-1 font-semibold text-xs shadow-sm focus:ring-1 focus:ring-blue-500 cursor-pointer"
+            
+            {/* Database Reset Button (Admin Only) */}
+            {currentUser?.role === 'ADMIN' && (
+              <button
+                onClick={onResetDb}
+                title="รีเซ็ตฐานข้อมูลเป็นค่าเริ่มต้น (Reset Seed Data)"
+                className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
               >
-                <option value="TENANT">ผู้เช่า (Tenant)</option>
-                <option value="OWNER">เจ้าของห้อง (Owner)</option>
-                <option value="ADMIN">นิติ/Admin</option>
-              </select>
-            </div>
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>รีเซ็ต DB</span>
+              </button>
+            )}
 
-            <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/30"
-              />
-              <div className="hidden lg:block text-left">
-                <div className="text-xs font-semibold text-slate-800 flex items-center gap-1">
-                  {currentUser.name}
-                  {currentUser.isKycVerified && (
-                    <span title="KYC ยืนยันตัวตนแล้ว">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    </span>
-                  )}
+            {currentUser ? (
+              <div className="flex items-center space-x-3">
+                
+                {/* User info card */}
+                <div
+                  onClick={() => onOpenAuth('login')}
+                  className="flex items-center space-x-2 pl-2 border-l border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+                  title="คลิกเพื่อสลับบัญชีผู้ใช้งาน"
+                >
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/30"
+                  />
+                  <div className="hidden lg:block text-left">
+                    <div className="text-xs font-semibold text-slate-800 flex items-center gap-1">
+                      {currentUser.name}
+                      {currentUser.isKycVerified && (
+                        <span title="KYC ยืนยันตัวตนแล้ว">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] font-medium text-blue-600">
+                      {currentUser.role === 'TENANT' && '👤 ผู้เช่า (Tenant)'}
+                      {currentUser.role === 'OWNER' && '🏢 เจ้าของห้อง (Owner)'}
+                      {currentUser.role === 'ADMIN' && '🛡️ นิติบุคคล (Admin)'}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-500">{currentUser.phone}</div>
+
+                {/* Logout Button */}
+                <button
+                  onClick={onLogout}
+                  title="ออกจากระบบ"
+                  className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => onOpenAuth('login')}
+                  className="px-3 py-2 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>เข้าสู่ระบบ</span>
+                </button>
+                <button
+                  onClick={() => onOpenAuth('register')}
+                  className="px-3 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors cursor-pointer"
+                >
+                  สมัครสมาชิก
+                </button>
+              </div>
+            )}
 
           </div>
 
